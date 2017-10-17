@@ -125,6 +125,61 @@ class Node {
     return prev_front_data;
   }
 
+  // Creates and inserts a new node after the current one.
+  void InsertAfter(const T& data) {
+    Node<T>* const old_next = this->m_next();
+    this->set_next(new Node<T>(data, old_next, this));
+    if (old_next) {
+      old_next->set_prev(this->m_next());
+    }
+  }
+
+  // Creates and inserts a new node before the current one.
+  void InsertBefore(const T& data) {
+    Node<T>* const old_prev = this->m_prev();
+    this->set_prev(new Node<T>(data, this, old_prev));
+    if (old_prev) {
+      old_prev->set_next(this->m_prev());
+    }
+  }
+
+  // Removes the node that follows the current one and returns true. Returns
+  // false if the current node is the last one and there is no next node to
+  // remove.
+  bool DeleteNext() {
+    Node<T>* const old_next = this->m_next();
+    if (old_next == nullptr) {
+      std::cout << "[WARNING]:: The current node is the last node. There is no "
+                   "next node to remove.";
+      return false;
+    }
+    this->set_next(old_next->m_next());
+    if (old_next->next()) {
+      old_next->m_next()->set_prev(this);
+    }
+    delete old_next;
+    return true;
+  }
+
+  // Removes the node that precedes the current one and returns true. Returns
+  // false if the current node is the first one and there is no prev node to
+  // remove.
+  bool DeletePrev() {
+    Node<T>* const old_prev = this->m_prev();
+    if (old_prev == nullptr) {
+      std::cout
+          << "[WARNING]:: The current node is the first node. There is no "
+             "prev node to remove.";
+      return false;
+    }
+    this->set_prev(old_prev->m_prev());
+    if (old_prev->prev()) {
+      old_prev->m_prev()->set_next(this);
+    }
+    delete old_prev;
+    return true;
+  }
+
  private:
   T data_;
   Node<T>* next_;
