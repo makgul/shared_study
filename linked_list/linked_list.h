@@ -41,6 +41,7 @@ class Node {
   }
 
   void PrintNodeSummary() const {
+    std::cout << "~~ Node Summary \n";
     std::cout << "Data: " << data_ << std::endl;
     std::cout << "Prev: " << (prev_ ? std::to_string(prev_->data()) : "Null")
               << std::endl;
@@ -49,7 +50,7 @@ class Node {
     std::cout << "---\n";
   }
 
-  // Mutable access to the last element.
+  // Mutable access to the first element.
   Node<T>* const MFront() {
     Node<T>* tmp = this;
     while (tmp->prev()) {
@@ -178,6 +179,109 @@ class Node {
     }
     delete old_prev;
     return true;
+  }
+
+  // Swaps the current node with the next one and returns true. Returns false if
+  // the current node is the end of the linked list.
+  bool SwapForward() {
+    Node<T>* current_next = this->m_next();
+    Node<T>* current_prev = this->m_prev();
+
+    if (current_next == nullptr) {
+      std::cout << "[WARNING] << The current node is the last node. There is "
+                   "no forward node to swap with.";
+      return false;
+    }
+
+    this->set_next(current_next->m_next());
+
+    if (current_next->next()) {
+      current_next->m_next()->set_prev(this);
+    }
+
+    this->set_prev(current_next);
+    current_next->set_next(this);
+    current_next->set_prev(current_prev);
+
+    if (current_prev) {
+      current_prev->set_next(current_next);
+    }
+
+    return true;
+  }
+
+  // Swaps the current node with the previous one and returns true. Returns
+  // false if the current node is the beginning of the linked list.
+  bool SwapBackward() {
+    Node<T>* current_next = this->m_next();
+    Node<T>* current_prev = this->m_prev();
+
+    if (current_prev == nullptr) {
+      std::cout << "[WARNING] << The current node is the first node. There is "
+                   "no backward node to swap with.";
+      return false;
+    }
+
+    this->set_next(current_prev);
+    this->set_prev(current_prev->m_prev());
+
+    if (current_prev->prev()) {
+      current_prev->m_prev()->set_next(this);
+    }
+
+    current_prev->set_prev(this);
+
+    current_prev->set_next(current_next);
+
+    if (current_next) {
+      current_next->set_prev(current_prev);
+    }
+
+    return true;
+  }
+
+  bool operator==(const Node<T>& other) const {
+    const bool x1 = this->data() == other.data();
+    const bool x2 = this->next() == other.next();
+    const bool x3 = this->prev() == other.prev();
+
+    return (x1 && x2 && x3);
+  }
+
+  bool operator!=(const Node<T>& other) const { return !(*this == other); }
+
+  // Returns the number of elements in the linled list.
+  int NumElem() const {
+    int num_elem = 0;
+    const Node<T>* tmp = this->Back();
+    while (tmp) {
+      ++num_elem;
+      tmp = tmp->prev();
+    }
+
+    std::cout << "num_elem: " << num_elem << std::endl;
+    return num_elem;
+  }
+
+  // Bubble sort the linked list by comparing the data field.
+  void BubbleSort(bool descending) {
+    int lim = NumElem();
+
+    while (lim > 1) {
+      Node<T>* tmp = this->MBack();
+      int i = 0;
+      while (i < (lim - 1)) {
+        const bool cond = descending ? (tmp->data() > tmp->prev()->data())
+                                     : (tmp->data() < tmp->prev()->data());
+        if (cond) {
+          tmp->SwapBackward();
+        } else {
+          tmp = tmp->m_prev();
+        }
+        ++i;
+      }
+      --lim;
+    }
   }
 
  private:
